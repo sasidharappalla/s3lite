@@ -1,0 +1,47 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://s3lite:s3lite@db:5432/s3lite
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: s3lite
+
+      # Auth + presigned links
+      S3LITE_API_KEY: ${S3LITE_API_KEY:-devkey}
+      PRESIGN_SECRET: ${PRESIGN_SECRET:-supersecret123}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://127.0.0.1:8001}
+
+    depends_on:
+      - db
+      - minio
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: s3lite
+      POSTGRES_PASSWORD: s3lite
+      POSTGRES_DB: s3lite
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+
+volumes:
+  pgdata:
+  miniodata:
