@@ -115,6 +115,18 @@ curl -X POST http://localhost:8001/buckets/my-bucket/objects/hello.txt/presign \
 | **Integrity** | SHA-256 | Content validation |
 | **Deployment** | Docker Compose | Container orchestration |
 
+## Load Test
+
+The 1,000-concurrent-operations figure is a project-reported result. The
+repository includes a k6 scenario that recreates the stated concurrency target:
+
+```bash
+S3LITE_API_KEY=your-api-key k6 run benchmarks/load.js
+```
+
+Commit the generated k6 summary alongside the environment details before using
+the figure as independently reproducible benchmark evidence.
+
 ## 📁 Project Structure
 
 ```
@@ -134,6 +146,7 @@ s3lite/
 ├── requirements-dev.txt
 ├── pyproject.toml
 ├── tests/
+├── benchmarks/load.js
 ├── LICENSE
 └── README.md
 ```
