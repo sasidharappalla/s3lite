@@ -4,15 +4,15 @@ services:
     ports:
       - "8001:8000"
     environment:
-      DATABASE_URL: postgresql+psycopg://s3lite:s3lite@db:5432/s3lite
+      DATABASE_URL: postgresql+psycopg://s3lite:${POSTGRES_PASSWORD:?Copy .env.example to .env}@db:5432/s3lite
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:?Copy .env.example to .env}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:?Copy .env.example to .env}
       MINIO_BUCKET: s3lite
 
       # Auth + presigned links
-      S3LITE_API_KEY: ${S3LITE_API_KEY:-devkey}
-      PRESIGN_SECRET: ${PRESIGN_SECRET:-supersecret123}
+      S3LITE_API_KEY: ${S3LITE_API_KEY:?Copy .env.example to .env}
+      PRESIGN_SECRET: ${PRESIGN_SECRET:?Copy .env.example to .env}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://127.0.0.1:8001}
 
     depends_on:
@@ -23,7 +23,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: s3lite
-      POSTGRES_PASSWORD: s3lite
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env}
       POSTGRES_DB: s3lite
     ports:
       - "5432:5432"
@@ -34,8 +34,8 @@ services:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:?Copy .env.example to .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?Copy .env.example to .env}
     ports:
       - "9000:9000"
       - "9001:9001"

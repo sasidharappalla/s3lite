@@ -1,10 +1,10 @@
 import hashlib
+import hashlib as _hashlib
+import hmac
 import os
 import tempfile
 import time
 import urllib.parse
-import hmac
-import hashlib as _hashlib
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.responses import Response, StreamingResponse
@@ -20,12 +20,15 @@ from .storage import MINIO_BUCKET, ensure_bucket_exists, object_locator, s3_clie
 PRESIGN_SECRET = os.environ.get("PRESIGN_SECRET", "")
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
 
+
 def _presign_sig(method: str, path: str, expires: int, ct: str = "") -> str:
     msg = f"{method.upper()}\n{path}\n{expires}\n{ct}".encode("utf-8")
     secret = PRESIGN_SECRET.encode("utf-8")
     return hmac.new(secret, msg, _hashlib.sha256).hexdigest()
 
+
 app = FastAPI(title="S3-lite")
+
 
 @app.on_event("startup")
 def startup():
@@ -34,9 +37,11 @@ def startup():
     wait_for_s3()
     ensure_bucket_exists()
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
 
 @app.post("/buckets", response_model=BucketOut, status_code=status.HTTP_201_CREATED)
 def create_bucket(payload: BucketCreate, db: Session = Depends(get_db), _=Depends(authorize)):
@@ -50,12 +55,20 @@ def create_bucket(payload: BucketCreate, db: Session = Depends(get_db), _=Depend
     db.refresh(bucket)
     return bucket
 
+
 @app.get("/buckets", response_model=list[BucketOut])
 def list_buckets(db: Session = Depends(get_db), _=Depends(authorize)):
     return db.query(Bucket).order_by(Bucket.created_at.desc()).all()
 
+
 @app.post("/buckets/{bucket_name}/objects/{object_key:path}/presign", response_model=PresignOut)
-def presign_object(bucket_name: str, object_key: str, payload: PresignRequest, db: Session = Depends(get_db), _=Depends(authorize)):
+def presign_object(
+    bucket_name: str,
+    object_key: str,
+    payload: PresignRequest,
+    db: Session = Depends(get_db),
+    _=Depends(authorize),
+):
     if not PRESIGN_SECRET:
         raise HTTPException(status_code=500, detail="PRESIGN_SECRET not configured")
 
@@ -74,6 +87,7 @@ def presign_object(bucket_name: str, object_key: str, payload: PresignRequest, d
 
     url = f"{PUBLIC_BASE_URL}{path}?{urllib.parse.urlencode(params)}"
     return PresignOut(url=url)
+
 
 @app.put("/buckets/{bucket_name}/objects/{object_key:path}", response_model=ObjectOut)
 async def upload_object(
@@ -143,6 +157,7 @@ async def upload_object(
     db.refresh(existing)
     return existing
 
+
 @app.get("/buckets/{bucket_name}/objects", response_model=list[ObjectOut])
 def list_objects(bucket_name: str, db: Session = Depends(get_db), _=Depends(authorize)):
     bucket = db.query(Bucket).filter(Bucket.name == bucket_name).one_or_none()
@@ -155,8 +170,11 @@ def list_objects(bucket_name: str, db: Session = Depends(get_db), _=Depends(auth
         .all()
     )
 
+
 @app.head("/buckets/{bucket_name}/objects/{object_key:path}")
-def head_object(bucket_name: str, object_key: str, db: Session = Depends(get_db), _=Depends(authorize)):
+def head_object(
+    bucket_name: str, object_key: str, db: Session = Depends(get_db), _=Depends(authorize)
+):
     bucket = db.query(Bucket).filter(Bucket.name == bucket_name).one_or_none()
     if not bucket:
         raise HTTPException(status_code=404, detail="Bucket not found")
@@ -176,8 +194,11 @@ def head_object(bucket_name: str, object_key: str, db: Session = Depends(get_db)
     }
     return Response(status_code=200, headers=headers)
 
+
 @app.get("/buckets/{bucket_name}/objects/{object_key:path}")
-def download_object(bucket_name: str, object_key: str, db: Session = Depends(get_db), _=Depends(authorize)):
+def download_object(
+    bucket_name: str, object_key: str, db: Session = Depends(get_db), _=Depends(authorize)
+):
     bucket = db.query(Bucket).filter(Bucket.name == bucket_name).one_or_none()
     if not bucket:
         raise HTTPException(status_code=404, detail="Bucket not found")
@@ -207,8 +228,11 @@ def download_object(bucket_name: str, object_key: str, db: Session = Depends(get
     }
     return StreamingResponse(iter_chunks(), media_type=obj.content_type, headers=headers)
 
+
 @app.delete("/buckets/{bucket_name}/objects/{object_key:path}", status_code=204)
-def delete_object(bucket_name: str, object_key: str, db: Session = Depends(get_db), _=Depends(authorize)):
+def delete_object(
+    bucket_name: str, object_key: str, db: Session = Depends(get_db), _=Depends(authorize)
+):
     bucket = db.query(Bucket).filter(Bucket.name == bucket_name).one_or_none()
     if not bucket:
         raise HTTPException(status_code=404, detail="Bucket not found")

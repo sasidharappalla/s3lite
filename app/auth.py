@@ -1,5 +1,5 @@
-import hmac
 import hashlib
+import hmac
 import os
 import time
 from typing import Optional
@@ -9,10 +9,12 @@ from fastapi import Header, HTTPException, Request
 API_KEY = os.environ.get("S3LITE_API_KEY", "")
 PRESIGN_SECRET = os.environ.get("PRESIGN_SECRET", "")
 
+
 def _sign(method: str, path: str, expires: int, ct: str = "") -> str:
     msg = f"{method.upper()}\n{path}\n{expires}\n{ct}".encode("utf-8")
     secret = PRESIGN_SECRET.encode("utf-8")
     return hmac.new(secret, msg, hashlib.sha256).hexdigest()
+
 
 def validate_presign(request: Request, ct: str = "") -> None:
     if not PRESIGN_SECRET:
@@ -41,6 +43,7 @@ def validate_presign(request: Request, ct: str = "") -> None:
     expected = _sign(request.method, request.url.path, expires, signed_ct)
     if not hmac.compare_digest(expected, sig):
         raise HTTPException(status_code=401, detail="Invalid signature")
+
 
 def authorize(request: Request, x_api_key: Optional[str] = Header(default=None)) -> None:
     qp = request.query_params

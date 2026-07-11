@@ -9,6 +9,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![MinIO](https://img.shields.io/badge/MinIO-C72E49?style=for-the-badge&logo=minio&logoColor=white)](https://min.io/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![CI](https://github.com/sasidharappalla/s3lite/actions/workflows/ci.yml/badge.svg)](https://github.com/sasidharappalla/s3lite/actions/workflows/ci.yml)
 
 <p align="center">
   <strong>S3-Compatible API</strong> · <strong>Presigned URLs</strong> · <strong>SHA-256 Integrity</strong> · <strong>1,000+ Concurrent Ops</strong>
@@ -71,6 +72,9 @@ Perfect for local development, testing S3 integrations, or learning how object s
 git clone https://github.com/sasidharappalla/s3lite.git
 cd s3lite
 
+# Create local-only credentials and replace every placeholder value
+cp .env.example .env
+
 # Start everything
 docker compose up --build
 
@@ -115,6 +119,8 @@ curl -X POST http://localhost:8001/buckets/my-bucket/objects/hello.txt/presign \
 
 ```
 s3lite/
+├── .env.example
+├── .github/workflows/ci.yml
 ├── app/
 │   ├── main.py               # API routes and integrity checks
 │   ├── auth.py               # API-key and presigned URL validation
@@ -125,9 +131,25 @@ s3lite/
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
+├── requirements-dev.txt
+├── pyproject.toml
+├── tests/
 ├── LICENSE
 └── README.md
 ```
+
+## Verification
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt
+ruff check app tests
+ruff format --check app tests
+pytest
+```
+
+GitHub Actions runs the same lint and test commands on Python 3.12 and 3.14.
 
 ## 📄 License
 

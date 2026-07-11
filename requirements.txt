@@ -1,6 +1,6 @@
-fastapi
-uvicorn[standard]
-SQLAlchemy
-psycopg[binary]
-boto3
-python-multipart
+fastapi==0.139.0
+uvicorn[standard]==0.51.0
+SQLAlchemy==2.0.51
+psycopg[binary]==3.3.4
+boto3==1.43.46
+python-multipart==0.0.32
