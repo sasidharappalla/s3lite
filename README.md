@@ -68,14 +68,14 @@ Perfect for local development, testing S3 integrations, or learning how object s
 
 ```bash
 # Clone the repo
-git clone https://github.com/sasidharappalla/s3-lite.git
-cd s3-lite
+git clone https://github.com/sasidharappalla/s3lite.git
+cd s3lite
 
 # Start everything
 docker compose up --build
 
-# API available at http://localhost:8000
-# API Docs at http://localhost:8000/docs
+# API available at http://localhost:8001
+# API Docs at http://localhost:8001/docs
 # MinIO Console at http://localhost:9001
 ```
 
@@ -83,18 +83,18 @@ docker compose up --build
 
 ```bash
 # Create a bucket
-curl -X POST http://localhost:8000/buckets \
+curl -X POST http://localhost:8001/buckets \
   -H "X-API-Key: your-api-key" \
   -H "Content-Type: application/json" \
   -d '{"name": "my-bucket"}'
 
 # Upload an object
-curl -X PUT http://localhost:8000/buckets/my-bucket/objects/hello.txt \
+curl -X PUT http://localhost:8001/buckets/my-bucket/objects/hello.txt \
   -H "X-API-Key: your-api-key" \
   -F "file=@hello.txt"
 
 # Generate a presigned URL (time-bound)
-curl -X POST http://localhost:8000/buckets/my-bucket/objects/hello.txt/presign \
+curl -X POST http://localhost:8001/buckets/my-bucket/objects/hello.txt/presign \
   -H "X-API-Key: your-api-key" \
   -H "Content-Type: application/json" \
   -d '{"method": "GET", "expires_in": 3600}'
@@ -114,23 +114,18 @@ curl -X POST http://localhost:8000/buckets/my-bucket/objects/hello.txt/presign \
 ## 📁 Project Structure
 
 ```
-s3-lite/
+s3lite/
 ├── app/
-│   ├── main.py               # FastAPI application
-│   ├── routers/
-│   │   ├── buckets.py         # Bucket operations
-│   │   └── objects.py         # Object operations
-│   ├── models/                # SQLAlchemy models
-│   ├── schemas/               # Pydantic schemas
-│   ├── services/
-│   │   ├── storage.py         # MinIO integration
-│   │   ├── auth.py            # API key + HMAC logic
-│   │   └── integrity.py       # SHA-256 validation
-│   └── core/
-│       └── config.py          # Configuration
+│   ├── main.py               # API routes and integrity checks
+│   ├── auth.py               # API-key and presigned URL validation
+│   ├── db.py                 # PostgreSQL session and startup checks
+│   ├── models.py             # SQLAlchemy bucket/object models
+│   ├── schemas.py            # Pydantic API schemas
+│   └── storage.py            # MinIO client and object mapping
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
+├── LICENSE
 └── README.md
 ```
 
